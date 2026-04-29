@@ -1,11 +1,11 @@
 use crate::color::{Color, ppm_format};
-pub struct Canvas{
+pub struct Canvas {
     width : usize,
     height : usize,
     pixels : Vec<Color>
 }
-impl Canvas{
-    fn new(width: usize,height: usize) -> Canvas{
+impl Canvas {
+    pub fn new(width: usize, height: usize) -> Canvas {
         Canvas{
             width: width,
             height: height,
@@ -13,13 +13,13 @@ impl Canvas{
         }
     }
 }
-fn write_pixel(c: &mut Canvas, x:usize, y: usize, color: Color){
+pub fn write_pixel(c: &mut Canvas, x: usize, y: usize, color: Color) {
    c.pixels[y*c.width+x] = color
 }
 fn pixel_at(c :&Canvas, x: usize,y:usize)->Color{
     c.pixels[y*c.width+x]
 }
-fn canvas_to_ppm(c: &Canvas)-> String{
+pub fn canvas_to_ppm(c: &Canvas) -> String {
     let mut s = String::new();
     s.push_str("P3\n");
     s.push_str(&format!("{} {}\n",c.width,c.height));
@@ -42,14 +42,15 @@ fn canvas_to_ppm(c: &Canvas)-> String{
             current.push_str(&s);
         } else {
             let mut rest = String::new();
-            for (i,value) in s.split(" ").enumerate() {
-                if current.len()+1 + value.len()<=70{
+            let mut overflow = false;
+            for (i, value) in s.split(" ").enumerate() {
+                if !overflow && current.len() + 1 + value.len() <= 70 {
                     current.push(' ');
                     current.push_str(value);
-
-                }else{
+                } else {
+                    overflow = true;
                     rest.push_str(value);
-                    if i != 2{
+                    if i != 2 {
                         rest.push(' ');
                     }
                 }
