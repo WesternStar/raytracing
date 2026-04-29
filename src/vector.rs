@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Neg};
+use std::ops::{Add, Sub, Neg, Mul, Div};
 use crate::tuple::{Tuple, is_vector};
 use crate::point::Point;
 
@@ -52,6 +52,20 @@ impl Neg for Vector {
     type Output = Vector;
     fn neg(self) -> Self::Output {
         Vector(-self.0)
+    }
+}
+
+impl Mul<f64> for Vector {
+    type Output = Vector;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Vector(self.0 * rhs)
+    }
+}
+
+impl Div<f64> for Vector {
+    type Output = Vector;
+    fn div(self, rhs: f64) -> Self::Output {
+        Vector(self.0 / rhs)
     }
 }
 
@@ -131,6 +145,19 @@ mod tests {
         let v1 = Vector::new(1.0, 2.0, 3.0);
         let v2 = Vector::new(2.0, 3.0, 4.0);
         assert_eq!(dot(v1, v2), 20.0)
+    }
+
+    #[test]
+    fn scale_vector() {
+        let v = Vector::new(1.0, -2.0, 3.0);
+        assert_eq!(v * 2.0, Vector::new(2.0, -4.0, 6.0));
+        assert_eq!(v * 0.5, Vector::new(0.5, -1.0, 1.5));
+    }
+
+    #[test]
+    fn divide_vector() {
+        let v = Vector::new(1.0, -2.0, 3.0);
+        assert_eq!(v / 2.0, Vector::new(0.5, -1.0, 1.5));
     }
 
     #[test]
