@@ -1,11 +1,5 @@
 use std::ops::{Add, Sub, Mul};
 
-const EPSILON: f64 = 0.0001;
-
-trait ApproxEq {
-    fn approx_eq(&self, other: &Self) -> bool;
-}
-
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub struct Color{
     red:f64,
@@ -58,14 +52,6 @@ impl Mul for Color{
         }
     }
 }
-impl ApproxEq for Color {
-    fn approx_eq(&self, other: &Self) -> bool {
-        (self.red - other.red).abs() < EPSILON
-            && (self.green - other.green).abs() < EPSILON
-            && (self.blue - other.blue).abs() < EPSILON
-    }
-}
-
 impl Mul<f64> for Color{
     type Output = Color;
     fn mul(self, rhs: f64) -> Self::Output {
@@ -76,15 +62,24 @@ impl Mul<f64> for Color{
         }
     }
 }
-pub fn ppm_format(c: Color)->String{
-    let red = (c.red*255.0).round() as u8;
-    let green =(c.green*255.0).round() as u8;
-    let blue = (c.blue*255.0).round() as u8;
-    format!("{} {} {}",red,green,blue)
+pub fn ppm_format(c: Color) -> String {
+    let red = (c.red.clamp(0.0, 1.0) * 255.0).round() as u8;
+    let green = (c.green.clamp(0.0, 1.0) * 255.0).round() as u8;
+    let blue = (c.blue.clamp(0.0, 1.0) * 255.0).round() as u8;
+    format!("{} {} {}", red, green, blue)
 }
 #[cfg(test)]
+impl Color {
+    fn approx_eq(&self, other: &Self) -> bool {
+        (self.red - other.red).abs() < f64::EPSILON
+            && (self.green - other.green).abs() < f64::EPSILON
+            && (self.blue - other.blue).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(test)]
 mod tests {
-    use crate::color::{Color, ApproxEq};
+    use crate::color::{Color};
 
 // 	​Scenario​: Colors are (red, green, blue) tuples
 // ​ 	  ​Given​ c ← color(-0.5, 0.4, 1.7)

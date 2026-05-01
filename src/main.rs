@@ -1,6 +1,6 @@
-use raytracing::canvas::{Canvas, write_pixel, canvas_to_ppm};
+use raytracing::canvas::Canvas;
 use raytracing::color::Color;
-use raytracing::vector::{Vector, normalize};
+use raytracing::vector::Vector;
 use std::fs;
 
 fn tick(env: (Vector, Vector), projectile: (Vector, Vector)) -> (Vector, Vector) {
@@ -11,7 +11,7 @@ fn tick(env: (Vector, Vector), projectile: (Vector, Vector)) -> (Vector, Vector)
 
 fn main() {
     let env = (Vector::new(0.0, -0.1, 0.0), Vector::new(-0.01, 0.0, 0.0));
-    let mut projectile = (Vector::new(0.0, 1.0, 0.0), normalize(Vector::new(1.0, 1.0, 0.0)));
+    let mut projectile = (Vector::new(0.0, 1.0, 0.0), Vector::new(1.0, 1.0, 0.0).normalize());
 
     let width = 900usize;
     let height = 550usize;
@@ -43,14 +43,14 @@ fn main() {
                 let x = (x0 as f64 + t * (x1 as f64 - x0 as f64)).round() as usize;
                 let y = (y0 as f64 + t * (y1 as f64 - y0 as f64)).round() as usize;
                 if x < width && y < height {
-                    write_pixel(&mut canvas, x, y, red);
+                    canvas.write_pixel(x, y, red);
                 }
             }
         }
         prev = curr;
     }
 
-    let ppm = canvas_to_ppm(&canvas);
+    let ppm = canvas.to_ppm();
     fs::write("projectile.ppm", ppm).expect("Failed to write file");
     println!("Written to projectile.ppm");
 }
