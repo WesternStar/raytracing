@@ -11,12 +11,13 @@ impl Point {
     }
 }
 
-impl From<Tuple> for Point {
-    fn from(t: Tuple) -> Self {
+impl TryFrom<Tuple> for Point {
+    type Error = &'static str;
+    fn try_from(t: Tuple) -> Result<Self, Self::Error> {
         if is_point(&t) {
-            Point(t)
+            Ok(Point(t))
         } else {
-            panic!("Tuple is not a point")
+            Err("Tuple is not a point")
         }
     }
 }

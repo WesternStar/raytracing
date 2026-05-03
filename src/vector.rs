@@ -9,14 +9,37 @@ impl Vector {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector(Tuple { x, y, z, w: 0.0 })
     }
+
+    pub fn magnitude(&self) -> f64 {
+        (self.0.x.powi(2) + self.0.y.powi(2) + self.0.z.powi(2)).sqrt()
+    }
+
+    pub fn normalize(&self) -> Vector {
+        let m = self.magnitude();
+        assert!(m > f64::EPSILON);
+        Vector::new(self.0.x / m, self.0.y / m, self.0.z / m)
+    }
+
+    pub fn dot(&self, rhs: Vector) -> f64 {
+        self.0.x * rhs.0.x + self.0.y * rhs.0.y + self.0.z * rhs.0.z
+    }
+
+    pub fn cross(&self, rhs: Vector) -> Vector {
+        Vector::new(
+            self.0.y * rhs.0.z - self.0.z * rhs.0.y,
+            self.0.z * rhs.0.x - self.0.x * rhs.0.z,
+            self.0.x * rhs.0.y - self.0.y * rhs.0.x,
+        )
+    }
 }
 
-impl From<Tuple> for Vector {
-    fn from(t: Tuple) -> Self {
+impl TryFrom<Tuple> for Vector {
+    type Error = &'static str;
+    fn try_from(t: Tuple) -> Result<Self, Self::Error> {
         if is_vector(&t) {
-            Vector(t)
+            Ok(Vector(t))
         } else {
-            panic!("Tuple is not a vector")
+            Err("Tuple is not a vector")
         }
     }
 }
@@ -69,27 +92,6 @@ impl Div<f64> for Vector {
     }
 }
 
-pub fn magnitude(v: Vector) -> f64 {
-    (v.0.x.powi(2) + v.0.y.powi(2) + v.0.z.powi(2)).sqrt()
-}
-
-pub fn normalize(v: Vector) -> Vector {
-    let m = magnitude(v);
-    Vector::new(v.0.x / m, v.0.y / m, v.0.z / m)
-}
-
-pub fn dot(lhs: Vector, rhs: Vector) -> f64 {
-    lhs.0.x * rhs.0.x + lhs.0.y * rhs.0.y + lhs.0.z * rhs.0.z
-}
-
-pub fn cross(lhs: Vector, rhs: Vector) -> Vector {
-    Vector::new(
-        lhs.0.y * rhs.0.z - lhs.0.z * rhs.0.y,
-        lhs.0.z * rhs.0.x - lhs.0.x * rhs.0.z,
-        lhs.0.x * rhs.0.y - lhs.0.y * rhs.0.x,
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -124,27 +126,27 @@ mod tests {
 
     #[test]
     fn test_mag() {
-        assert_eq!(magnitude(Vector::new(1.0, 0.0, 0.0)), 1.0);
-        assert_eq!(magnitude(Vector::new(0.0, 1.0, 0.0)), 1.0);
-        assert_eq!(magnitude(Vector::new(0.0, 0.0, 1.0)), 1.0);
-        assert_eq!(magnitude(Vector::new(1.0, 2.0, 3.0)), 14_f64.sqrt());
-        assert_eq!(magnitude(Vector::new(-1.0, -2.0, -3.0)), 14_f64.sqrt());
+        assert_eq!(Vector::new(1.0, 0.0, 0.0).magnitude(), 1.0);
+        assert_eq!(Vector::new(0.0, 1.0, 0.0).magnitude(), 1.0);
+        assert_eq!(Vector::new(0.0, 0.0, 1.0).magnitude(), 1.0);
+        assert_eq!(Vector::new(1.0, 2.0, 3.0).magnitude(), 14_f64.sqrt());
+        assert_eq!(Vector::new(-1.0, -2.0, -3.0).magnitude(), 14_f64.sqrt());
     }
 
     #[test]
     fn test_norm() {
-        assert_eq!(normalize(Vector::new(4.0, 0.0, 0.0)), Vector::new(1.0, 0.0, 0.0));
-        let n2 = normalize(Vector::new(1.0, 2.0, 3.0));
+        assert_eq!(Vector::new(4.0, 0.0, 0.0).normalize(), Vector::new(1.0, 0.0, 0.0));
+        let n2 = Vector::new(1.0, 2.0, 3.0).normalize();
         let s = 14.0_f64.sqrt();
         assert_eq!(n2, Vector::new(1.0 / s, 2.0 / s, 3.0 / s));
-        assert_eq!(magnitude(n2), 1.0);
+        assert_eq!(n2.magnitude(), 1.0);
     }
 
     #[test]
     fn test_dot_prod() {
         let v1 = Vector::new(1.0, 2.0, 3.0);
         let v2 = Vector::new(2.0, 3.0, 4.0);
-        assert_eq!(dot(v1, v2), 20.0)
+        assert_eq!(v1.dot(v2), 20.0)
     }
 
     #[test]
@@ -164,7 +166,7 @@ mod tests {
     fn test_cross_prod() {
         let v1 = Vector::new(1.0, 2.0, 3.0);
         let v2 = Vector::new(2.0, 3.0, 4.0);
-        assert_eq!(cross(v1, v2), Vector::new(-1.0, 2.0, -1.0));
-        assert_eq!(cross(v2, v1), Vector::new(1.0, -2.0, 1.0));
+        assert_eq!(v1.cross(v2), Vector::new(-1.0, 2.0, -1.0));
+        assert_eq!(v2.cross(v1), Vector::new(1.0, -2.0, 1.0));
     }
 }
